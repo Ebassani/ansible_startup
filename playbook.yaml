@@ -1,0 +1,9 @@
+---
+- name: Update all packages on Fedora
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Run dnf update
+      dnf:
+        name: "*"
+        state: latest
