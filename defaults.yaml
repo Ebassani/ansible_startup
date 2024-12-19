@@ -1,27 +1,20 @@
 ---
-# defaults file for ansible-my-fedora
 basic_packages:
   - ffmpeg
   - gnome-tweaks
 
 dev_tools:
   - code
-  - git
-
-
-direct_install:
-#  - https://links.fortinet.com/forticlient/rhel/vpnagent
-#  - https://zoom.us/client/latest/zoom_x86_64.rpm
-#  - https://atom.io/download/rpm
+  - gits
 
 flatpaks:
-#- org.signal.Signal
-#- org.stellarium.Stellarium
-#- io.atom.Atom
-#- us.zoom.Zoom
   - md.obsidian.Obsidian
   - com.spotify.Client
   - io.github.zen_browser.zen
+  - org.telegram.desktop
+  - com.github.johnfactotum.Foliate
+
+
 unwanted_packages:
 #  - gnome-boxes  
   - rhythmbox 
