@@ -1,5 +1,5 @@
 - name: Fedora Workstation Setup
-  hosts: localhost
+  hosts: local
   become: True
   tasks:
     
