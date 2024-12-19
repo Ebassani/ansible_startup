@@ -1,7 +1,14 @@
----
----
-# Tasks file for ansible-my-fedora
-- name: fedora-workstation-repositories
+- name: install all updates
+  become: True
+  tags:
+    - update
+    - upgrade
+  ansible.builtin.dnf:
+    name: '*'
+    update_cache: yes
+    state: latest
+
+- name: Fedora workstation repositories
   become: True
   tags:
     - always
@@ -78,14 +85,3 @@
         name: "{{ flatpaks }}"
         remote: "flathub"
         method: "user"
-
-
-- name: install all updates
-  become: True
-  tags:
-    - update
-    - upgrade
-  ansible.builtin.dnf:
-    name: '*'
-    update_cache: yes
-    state: latest
