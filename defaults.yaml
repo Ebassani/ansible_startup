@@ -5,7 +5,9 @@ basic_packages:
 
 dev_tools:
   - code
-  - gits
+  - git
+  - gh
+  - rustup
 
 flatpaks:
   - md.obsidian.Obsidian

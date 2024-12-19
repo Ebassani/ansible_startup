@@ -2,7 +2,6 @@
   hosts: local
   become: True
   tasks:
-    
   - name: install all updates
     become: True
     tags:
@@ -47,10 +46,24 @@
           baseurl: https://packages.microsoft.com/yumrepos/vscode
           gpgkey: https://packages.microsoft.com/keys/microsoft.asc
           gpgcheck: True
+      - name: Add GitHub CLI repository
+        ansible.builtin.yum_repository:
+          name: github-cli
+          description: GitHub CLI
+          baseurl: https://cli.github.com/packages/rpm/
+          gpgkey: https://cli.github.com/packages/rpm/gh-cli.repo
+          gpgcheck: True
       - name: Install Dev and Ops packages
         ansible.builtin.dnf:
           name: "{{ dev_tools }}"
           state: present
+      - name: Install Rust toolchain
+        ansible.builtin.command:
+          cmd: "{{ item }}"
+          creates: "{{ ansible_env.HOME }}/.cargo/bin/rustc"
+        with_items:
+          - "{{ ansible_env.HOME }}/.cargo/bin/rustup-init -y"
+          - "{{ ansible_env.HOME }}/.cargo/bin/rustup update"
 
   - name: Install systools packages
     become: True
