@@ -1,6 +1,8 @@
 - name: Fedora Workstation Setup
   hosts: local
   become: True
+  vars_files:
+    - defaults.yaml
   tasks:
   - name: install all updates
     become: True
@@ -37,7 +39,6 @@
     become: True
     tags:
       - dev
-      - never
     block:
       - name: Add VS Code repository
         ansible.builtin.yum_repository:
@@ -57,22 +58,6 @@
         ansible.builtin.dnf:
           name: "{{ dev_tools }}"
           state: present
-      - name: Install Rust toolchain
-        ansible.builtin.command:
-          cmd: "{{ item }}"
-          creates: "{{ ansible_env.HOME }}/.cargo/bin/rustc"
-        with_items:
-          - "{{ ansible_env.HOME }}/.cargo/bin/rustup-init -y"
-          - "{{ ansible_env.HOME }}/.cargo/bin/rustup update"
-
-  - name: Install systools packages
-    become: True
-    tags:
-      - systools
-      - never
-    ansible.builtin.dnf:
-      name: "{{ sys_tools }}"
-      state: present
 
   - name: Remove unwanted Packages
     become: True
@@ -80,7 +65,6 @@
       - unwanted
       - uninstall
       - remove
-      - never
     ansible.builtin.dnf:
       name: "{{ unwanted_packages }}"
       state: absent
@@ -89,7 +73,6 @@
     become: False
     tags:
       - flatpak
-      - never
     block:
       - name: Add the flathub flatpak repository remote to the user installation
         community.general.flatpak_remote:
