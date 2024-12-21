@@ -15,7 +15,8 @@ flatpaks:
   - io.github.zen_browser.zen
   - org.telegram.desktop
   - com.github.johnfactotum.Foliate
-
+  - com.jetbrains.RustRover
+  - com.mattjakeman.ExtensionManager
 
 unwanted_packages:
 #  - gnome-boxes  
