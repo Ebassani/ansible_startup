@@ -8,6 +8,7 @@ dev_tools:
   - git
   - gh
   - rustup
+  - nodejs
 
 flatpaks:
   - md.obsidian.Obsidian
@@ -16,6 +17,7 @@ flatpaks:
   - org.telegram.desktop
   - com.github.johnfactotum.Foliate
   - com.jetbrains.RustRover
+  - com.jetbrains.IntelliJ-IDEA-Ultimate
   - com.mattjakeman.ExtensionManager
 
 unwanted_packages:
