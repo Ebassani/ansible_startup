@@ -31,6 +31,8 @@ Useful targeted runs:
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags nvidia
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags flatpak
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags validation
+ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags steam
+ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags dev,jetbrains
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags tauri -e tauri_development_enabled=true
 ```
 
@@ -79,7 +81,11 @@ The NVIDIA list is intentionally slim:
 
 The multimedia list is only for common Fedora codec gaps and AMD iGPU VA-API support. `libdvdcss`, VDPAU diagnostics, and native 32-bit Steam/Lutris libraries are left out for now.
 
+Steam is installed from RPM Fusion's nonfree RPM repository instead of Flathub.
+
 `net.davidotek.pupgui2` is ProtonUp-Qt. It manages Proton-GE and Wine-GE compatibility tools for Steam, Lutris, Heroic, and similar launchers. Remove it from `flatpaks` if you do not play Windows games through Proton.
+
+JetBrains IDEs are managed through JetBrains Toolbox instead of individual Flatpaks. The `dev` pass downloads the latest Toolbox tarball from JetBrains, extracts it under `~/.local/share/JetBrains/Toolbox`, and links `jetbrains-toolbox` into `~/.local/bin`. Launch it once to let Toolbox initialize its files and create the desktop entry.
 
 ## Optional Tauri development
 
@@ -90,7 +96,3 @@ ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags tauri -
 ```
 
 The base `dev_tools` list already installs Rust, Node.js, npm, `curl`, and `wget`. The optional Tauri block adds the WebKit, GTK, AppIndicator, librsvg, libxdo, OpenSSL, pkg-config, and C development packages used by Tauri and related Linux desktop builds.
-
-// TODO:
-Move steam from flatpack to rpm,
-Do the same for jetbrains products

@@ -43,6 +43,9 @@ multimedia_packages:
   - gstreamer1-plugins-ugly
   - mesa-va-drivers-freeworld
 
+gaming_packages:
+  - steam
+
 dev_tools:
   - code
   - git
@@ -52,6 +55,12 @@ dev_tools:
   - npm
   - python3-pip
   - pipx
+  - fuse
+
+jetbrains_toolbox_release_api_url: "https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release"
+jetbrains_toolbox_install_dir: "{{ lookup('ansible.builtin.env', 'HOME') }}/.local/share/JetBrains/Toolbox"
+jetbrains_toolbox_bin_dir: "{{ lookup('ansible.builtin.env', 'HOME') }}/.local/bin"
+jetbrains_toolbox_archive_path: "/tmp/jetbrains-toolbox.tar.gz"
 
 tauri_development_enabled: false
 
@@ -74,11 +83,15 @@ flatpaks:
   - io.github.zen_browser.zen
   - org.telegram.desktop
   - com.github.johnfactotum.Foliate
+  - com.mattjakeman.ExtensionManager
+  - net.davidotek.pupgui2
+
+unwanted_jetbrains_flatpaks:
   - com.jetbrains.RustRover
   - com.jetbrains.IntelliJ-IDEA-Ultimate
-  - com.mattjakeman.ExtensionManager
+
+unwanted_steam_flatpaks:
   - com.valvesoftware.Steam
-  - net.davidotek.pupgui2
 
 unwanted_packages:
   - rhythmbox
@@ -92,7 +105,7 @@ validation_rpm_packages:
   - switcheroo-control
   - code
   - gh
+  - steam
 
 validation_flatpaks:
   - io.github.zen_browser.zen
-  - com.valvesoftware.Steam

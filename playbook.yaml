@@ -144,6 +144,15 @@
       tags:
         - multimedia
 
+    - name: Install gaming packages
+      ansible.builtin.dnf:
+        name: "{{ gaming_packages }}"
+        state: present
+        allowerasing: true
+      tags:
+        - gaming
+        - steam
+
     - name: Install dev and ops packages
       ansible.builtin.dnf:
         name: "{{ dev_tools }}"
@@ -151,6 +160,79 @@
         allowerasing: true
       tags:
         - dev
+
+    - name: Read latest JetBrains Toolbox release metadata
+      become: false
+      ansible.builtin.uri:
+        url: "{{ jetbrains_toolbox_release_api_url }}"
+        return_content: true
+      register: jetbrains_toolbox_release_metadata
+      tags:
+        - dev
+        - jetbrains
+
+    - name: Select JetBrains Toolbox download for this architecture
+      become: false
+      ansible.builtin.set_fact:
+        jetbrains_toolbox_download: "{{ jetbrains_toolbox_release_metadata.json.TBA[0].downloads.linuxARM64 if ansible_architecture in ['aarch64', 'arm64'] else jetbrains_toolbox_release_metadata.json.TBA[0].downloads.linux }}"
+      tags:
+        - dev
+        - jetbrains
+
+    - name: Set JetBrains Toolbox install paths
+      become: false
+      ansible.builtin.set_fact:
+        jetbrains_toolbox_download_url: "{{ jetbrains_toolbox_download.link }}"
+        jetbrains_toolbox_extract_dir: "{{ jetbrains_toolbox_install_dir }}/{{ jetbrains_toolbox_download.link | basename | regex_replace('\\.tar\\.gz$', '') }}"
+      tags:
+        - dev
+        - jetbrains
+
+    - name: Create JetBrains Toolbox user directories
+      become: false
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ jetbrains_toolbox_install_dir }}"
+        - "{{ jetbrains_toolbox_bin_dir }}"
+      tags:
+        - dev
+        - jetbrains
+
+    - name: Download JetBrains Toolbox
+      become: false
+      ansible.builtin.get_url:
+        url: "{{ jetbrains_toolbox_download_url }}"
+        dest: "{{ jetbrains_toolbox_archive_path }}"
+        mode: "0644"
+        checksum: "sha256:{{ jetbrains_toolbox_download.checksumLink }}"
+      tags:
+        - dev
+        - jetbrains
+
+    - name: Extract JetBrains Toolbox
+      become: false
+      ansible.builtin.unarchive:
+        src: "{{ jetbrains_toolbox_archive_path }}"
+        dest: "{{ jetbrains_toolbox_install_dir }}"
+        remote_src: true
+        creates: "{{ jetbrains_toolbox_extract_dir }}/bin/jetbrains-toolbox"
+      tags:
+        - dev
+        - jetbrains
+
+    - name: Link JetBrains Toolbox into the user PATH
+      become: false
+      ansible.builtin.file:
+        src: "{{ jetbrains_toolbox_extract_dir }}/bin/jetbrains-toolbox"
+        dest: "{{ jetbrains_toolbox_bin_dir }}/jetbrains-toolbox"
+        state: link
+        force: true
+      tags:
+        - dev
+        - jetbrains
 
     - name: Install Tauri development packages
       ansible.builtin.dnf:
