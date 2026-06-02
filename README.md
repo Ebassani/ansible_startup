@@ -79,3 +79,7 @@ The NVIDIA list is intentionally slim:
 The multimedia list is only for common Fedora codec gaps and AMD iGPU VA-API support. `libdvdcss`, VDPAU diagnostics, and native 32-bit Steam/Lutris libraries are left out for now.
 
 `net.davidotek.pupgui2` is ProtonUp-Qt. It manages Proton-GE and Wine-GE compatibility tools for Steam, Lutris, Heroic, and similar launchers. Remove it from `flatpaks` if you do not play Windows games through Proton.
+
+// TODO:
+Move steam from flatpack to rpm,
+Do the same for jetbrains products
