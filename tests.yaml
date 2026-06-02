@@ -60,6 +60,15 @@
       ansible.builtin.command: flatpak --user info io.github.zen_browser.zen
       changed_when: false
 
+    - name: Check Tailscale daemon service
+      ansible.builtin.command: systemctl is-active tailscaled
+      register: tailscale_state
+      changed_when: false
+
+    - name: Check Tailscale CLI is installed
+      ansible.builtin.command: tailscale version
+      register: tailscale_version
+      changed_when: false
     - name: Print GPU and power summary
       ansible.builtin.debug:
         msg:

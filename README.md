@@ -37,6 +37,29 @@ ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags validat
 
 If Secure Boot is enabled and NVIDIA does not load after reboot, the NVIDIA module probably needs Machine Owner Key enrollment/signing. Fedora 41+ improved NVIDIA installation with Secure Boot support through GNOME Software, but manual RPM Fusion installs can still require extra akmods signing steps depending on the install path and firmware state.
 
+
+## Tailscale
+
+The playbook installs `tailscale` and enables `tailscaled`, but it does not log you into your tailnet or force an exit node.
+
+After the first boot, authenticate with:
+
+```bash
+sudo tailscale up
+```
+
+To use an existing exit node:
+
+```bash
+tailscale status
+sudo tailscale set --exit-node=<exit-node-name-or-tailscale-ip> --exit-node-allow-lan-access=true
+```
+
+To stop using the exit node:
+
+```bash
+sudo tailscale set --exit-node=
+```
 ## Acer Nitro extras
 
 This playbook handles Fedora-side power profiles through `tuned`/`tuned-ppd` and hybrid graphics helpers. It does not install unofficial Acer Nitro keyboard RGB/fan kernel modules. Those are model-specific and should be added only after the base system and NVIDIA driver are confirmed stable.
