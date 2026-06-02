@@ -152,6 +152,25 @@
       tags:
         - dev
 
+    - name: Install Tauri development packages
+      ansible.builtin.dnf:
+        name: "{{ tauri_development_packages }}"
+        state: present
+        allowerasing: true
+      when: tauri_development_enabled | bool
+      tags:
+        - dev
+        - tauri
+
+    - name: Install C development package group for Tauri
+      ansible.builtin.dnf:
+        name: "@c-development"
+        state: present
+      when: tauri_development_enabled | bool
+      tags:
+        - dev
+        - tauri
+
     - name: Remove unwanted packages
       ansible.builtin.dnf:
         name: "{{ unwanted_packages }}"

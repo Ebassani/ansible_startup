@@ -31,6 +31,7 @@ Useful targeted runs:
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags nvidia
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags flatpak
 ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags validation
+ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags tauri -e tauri_development_enabled=true
 ```
 
 ## Secure Boot note
@@ -79,6 +80,16 @@ The NVIDIA list is intentionally slim:
 The multimedia list is only for common Fedora codec gaps and AMD iGPU VA-API support. `libdvdcss`, VDPAU diagnostics, and native 32-bit Steam/Lutris libraries are left out for now.
 
 `net.davidotek.pupgui2` is ProtonUp-Qt. It manages Proton-GE and Wine-GE compatibility tools for Steam, Lutris, Heroic, and similar launchers. Remove it from `flatpaks` if you do not play Windows games through Proton.
+
+## Optional Tauri development
+
+Tauri development dependencies are kept out of the default run. Enable them when you need Linux desktop app build headers:
+
+```bash
+ansible-playbook -i inventory.ini playbook.yaml --ask-become-pass --tags tauri -e tauri_development_enabled=true
+```
+
+The base `dev_tools` list already installs Rust, Node.js, npm, `curl`, and `wget`. The optional Tauri block adds the WebKit, GTK, AppIndicator, librsvg, libxdo, OpenSSL, pkg-config, and C development packages used by Tauri and related Linux desktop builds.
 
 // TODO:
 Move steam from flatpack to rpm,

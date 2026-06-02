@@ -53,6 +53,21 @@ dev_tools:
   - python3-pip
   - pipx
 
+tauri_development_enabled: false
+
+tauri_development_packages:
+  - webkit2gtk4.1-devel
+  - webkitgtk6.0-devel
+  - javascriptcoregtk4.1-devel
+  - openssl-devel
+  - gtk3-devel
+  - libsoup3-devel
+  - libappindicator-gtk3-devel
+  - librsvg2-devel
+  - libxdo-devel
+  - pkgconf-pkg-config
+  - file
+
 flatpaks:
   - md.obsidian.Obsidian
   - com.spotify.Client
