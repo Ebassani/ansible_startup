@@ -2,6 +2,43 @@
 basic_packages:
   - ffmpeg
   - gnome-tweaks
+  - gnome-extensions-app
+  - p7zip
+  - p7zip-plugins
+  - unzip
+  - wget
+  - curl
+  - htop
+  - btop
+  - fastfetch
+  - lm_sensors
+  - nvtop
+  - libva-utils
+
+laptop_packages:
+  - switcheroo-control
+  - upower
+  - powertop
+  - tuned
+  - tuned-ppd
+  - mokutil
+
+nvidia_packages:
+  - kernel-devel-matched
+  - akmod-nvidia
+  - xorg-x11-drv-nvidia-cuda
+  - xorg-x11-drv-nvidia-power
+  - nvidia-settings
+  - libva-nvidia-driver
+  - vulkan-tools
+
+multimedia_packages:
+  - gstreamer1-libav
+  - gstreamer1-plugin-openh264
+  - gstreamer1-plugins-bad-free
+  - gstreamer1-plugins-bad-freeworld
+  - gstreamer1-plugins-ugly
+  - mesa-va-drivers-freeworld
 
 dev_tools:
   - code
@@ -9,6 +46,9 @@ dev_tools:
   - gh
   - rustup
   - nodejs
+  - npm
+  - python3-pip
+  - pipx
 
 flatpaks:
   - md.obsidian.Obsidian
@@ -19,7 +59,21 @@ flatpaks:
   - com.jetbrains.RustRover
   - com.jetbrains.IntelliJ-IDEA-Ultimate
   - com.mattjakeman.ExtensionManager
+  - com.valvesoftware.Steam
+  - net.davidotek.pupgui2
 
 unwanted_packages:
-#  - gnome-boxes  
-  - rhythmbox 
+  - rhythmbox
+
+validation_rpm_packages:
+  - akmod-nvidia
+  - xorg-x11-drv-nvidia-cuda
+  - libva-nvidia-driver
+  - tuned-ppd
+  - switcheroo-control
+  - code
+  - gh
+
+validation_flatpaks:
+  - io.github.zen_browser.zen
+  - com.valvesoftware.Steam

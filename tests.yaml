@@ -1,0 +1,69 @@
+---
+- name: Fedora post-install tests
+  hosts: local
+  become: true
+  gather_facts: true
+  vars_files:
+    - defaults.yaml
+
+  tasks:
+    - name: Check NVIDIA kernel module is installed for this kernel
+      ansible.builtin.command: modinfo -F version nvidia
+      register: nvidia_modinfo
+      changed_when: false
+
+    - name: Check NVIDIA GPU is visible to the proprietary driver
+      ansible.builtin.command: nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
+      register: nvidia_smi
+      changed_when: false
+
+    - name: Validate NVIDIA GPU output mentions an NVIDIA GPU
+      ansible.builtin.assert:
+        that:
+          - "'NVIDIA' in nvidia_smi.stdout or 'GeForce' in nvidia_smi.stdout or 'RTX' in nvidia_smi.stdout"
+        fail_msg: "nvidia-smi ran, but did not report the expected NVIDIA GPU."
+
+    - name: Check Vulkan sees at least one GPU
+      ansible.builtin.command: vulkaninfo --summary
+      register: vulkan_summary
+      changed_when: false
+
+    - name: Validate Vulkan summary has device information
+      ansible.builtin.assert:
+        that:
+          - "'deviceName' in vulkan_summary.stdout"
+        fail_msg: "Vulkan is installed, but vulkaninfo did not report any devices."
+
+    - name: Check tuned power profile control is available
+      ansible.builtin.command: tuned-adm active
+      register: tuned_active
+      changed_when: false
+
+    - name: Validate tuned reports an active profile
+      ansible.builtin.assert:
+        that:
+          - "'Current active profile' in tuned_active.stdout"
+        fail_msg: "Tuned is not reporting an active power profile."
+
+    - name: Check hybrid graphics helper service
+      ansible.builtin.command: systemctl is-active switcheroo-control
+      register: switcheroo_state
+      changed_when: false
+
+    - name: Check tuned service
+      ansible.builtin.command: systemctl is-active tuned
+      register: tuned_state
+      changed_when: false
+
+    - name: Check Zen Browser Flatpak is installed
+      become: false
+      ansible.builtin.command: flatpak --user info io.github.zen_browser.zen
+      changed_when: false
+
+    - name: Print GPU and power summary
+      ansible.builtin.debug:
+        msg:
+          - "NVIDIA module version: {{ nvidia_modinfo.stdout }}"
+          - "nvidia-smi: {{ nvidia_smi.stdout }}"
+          - "switcheroo-control: {{ switcheroo_state.stdout }}"
+          - "tuned: {{ tuned_state.stdout }}"

@@ -1,88 +1,232 @@
+---
 - name: Fedora Workstation Setup
   hosts: local
-  become: True
+  become: true
+  gather_facts: true
   vars_files:
     - defaults.yaml
+
+  pre_tasks:
+    - name: Check this playbook is running on Fedora
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Fedora"
+        fail_msg: "This playbook is intended for Fedora Workstation."
+      tags:
+        - always
+
   tasks:
-  - name: install all updates
-    become: True
-    tags:
-      - update
-      - upgrade
-    ansible.builtin.dnf:
-      name: '*'
-      update_cache: yes
-      state: latest
+    - name: Install all updates
+      ansible.builtin.dnf:
+        name: "*"
+        update_cache: true
+        state: latest
+      tags:
+        - update
+        - upgrade
 
-  - name: Fedora workstation repositories
-    become: True
-    tags:
-      - always
-    ansible.builtin.dnf:
-      name:
-        - fedora-workstation-repositories
-        - http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_version }}.noarch.rpm
-        - http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ ansible_distribution_version }}.noarch.rpm
-      state: present
-      disable_gpg_check: yes
+    - name: Install Fedora and RPM Fusion repositories
+      ansible.builtin.dnf:
+        name:
+          - fedora-workstation-repositories
+          - "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+          - "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+        state: present
+        disable_gpg_check: true
+      tags:
+        - repos
+        - always
 
-  - name: Install basic packages
-    become: True
-    tags:
-      - basic
-    ansible.builtin.dnf:
-      name: "{{ basic_packages }}"
-      state: present
-      allowerasing: True
+    - name: Add Microsoft package signing key
+      ansible.builtin.rpm_key:
+        key: https://packages.microsoft.com/keys/microsoft.asc
+        state: present
+      tags:
+        - dev
+        - repos
 
-  - name: Install Dev and Ops tools
-    become: True
-    tags:
-      - dev
-    block:
-      - name: Add VS Code repository
-        ansible.builtin.yum_repository:
-          name: vscode
-          description: Visual Studio Code
-          baseurl: https://packages.microsoft.com/yumrepos/vscode
-          gpgkey: https://packages.microsoft.com/keys/microsoft.asc
-          gpgcheck: True
-      - name: Add GitHub CLI repository
-        ansible.builtin.yum_repository:
-          name: github-cli
-          description: GitHub CLI
-          baseurl: https://cli.github.com/packages/rpm/
-          gpgkey: https://cli.github.com/packages/rpm/gh-cli.repo
-          gpgcheck: True
-      - name: Install Dev and Ops packages
-        ansible.builtin.dnf:
-          name: "{{ dev_tools }}"
-          state: present
+    - name: Add GitHub CLI package signing key
+      ansible.builtin.rpm_key:
+        key: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        state: present
+      tags:
+        - dev
+        - repos
 
-  - name: Remove unwanted Packages
-    become: True
-    tags:
-      - unwanted
-      - uninstall
-      - remove
-    ansible.builtin.dnf:
-      name: "{{ unwanted_packages }}"
-      state: absent
+    - name: Add VS Code repository
+      ansible.builtin.yum_repository:
+        name: vscode
+        description: Visual Studio Code
+        baseurl: https://packages.microsoft.com/yumrepos/vscode
+        gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+        gpgcheck: true
+        enabled: true
+      tags:
+        - dev
+        - repos
 
-  - name: Install Flatpaks
-    become: False
-    tags:
-      - flatpak
-    block:
-      - name: Add the flathub flatpak repository remote to the user installation
-        community.general.flatpak_remote:
-          name: flathub
-          state: present
-          flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          method: user
+    - name: Add GitHub CLI repository
+      ansible.builtin.yum_repository:
+        name: github-cli
+        description: GitHub CLI
+        baseurl: https://cli.github.com/packages/rpm
+        gpgkey: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        gpgcheck: true
+        enabled: true
+      tags:
+        - dev
+        - repos
 
-      - name: Install multiple packages
-        community.general.flatpak:
-          name: "{{ flatpaks }}"
-          remote: "flathub"
-          method: "user"
+    - name: Install basic packages
+      ansible.builtin.dnf:
+        name: "{{ basic_packages }}"
+        state: present
+        allowerasing: true
+      tags:
+        - basic
+
+    - name: Install laptop power and hybrid graphics packages
+      ansible.builtin.dnf:
+        name: "{{ laptop_packages }}"
+        state: present
+        allowerasing: true
+      tags:
+        - laptop
+        - power
+
+    - name: Enable laptop power and GPU helper services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - tuned
+        - switcheroo-control
+      tags:
+        - laptop
+        - power
+
+    - name: Install NVIDIA driver and GPU packages
+      ansible.builtin.dnf:
+        name: "{{ nvidia_packages }}"
+        state: present
+        allowerasing: true
+      tags:
+        - nvidia
+
+    - name: Build NVIDIA akmod for the current kernel
+      ansible.builtin.command: akmods --force
+      register: akmods_build
+      changed_when: "'Building and installing' in akmods_build.stdout"
+      tags:
+        - nvidia
+
+    - name: Regenerate initramfs after NVIDIA driver install
+      ansible.builtin.command: dracut --regenerate-all --force
+      changed_when: true
+      tags:
+        - nvidia
+
+    - name: Install multimedia codec packages
+      ansible.builtin.dnf:
+        name: "{{ multimedia_packages }}"
+        state: present
+        allowerasing: true
+      tags:
+        - multimedia
+
+    - name: Install dev and ops packages
+      ansible.builtin.dnf:
+        name: "{{ dev_tools }}"
+        state: present
+        allowerasing: true
+      tags:
+        - dev
+
+    - name: Remove unwanted packages
+      ansible.builtin.dnf:
+        name: "{{ unwanted_packages }}"
+        state: absent
+      tags:
+        - unwanted
+        - uninstall
+        - remove
+
+    - name: Add Flathub remote to the user installation
+      become: false
+      community.general.flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+        method: user
+      tags:
+        - flatpak
+
+    - name: Install Flatpak apps
+      become: false
+      community.general.flatpak:
+        name: "{{ flatpaks }}"
+        remote: flathub
+        method: user
+        state: present
+      tags:
+        - flatpak
+
+    - name: Check enabled RPM Fusion repositories
+      ansible.builtin.command: dnf repolist --enabled
+      register: enabled_repos
+      changed_when: false
+      tags:
+        - validation
+        - tests
+
+    - name: Validate required repositories are enabled
+      ansible.builtin.assert:
+        that:
+          - "'rpmfusion-free' in enabled_repos.stdout"
+          - "'rpmfusion-nonfree' in enabled_repos.stdout"
+        fail_msg: "RPM Fusion free/nonfree repositories are not enabled."
+      tags:
+        - validation
+        - tests
+
+    - name: Validate important RPM packages are installed
+      ansible.builtin.command: "rpm -q {{ item }}"
+      loop: "{{ validation_rpm_packages }}"
+      changed_when: false
+      tags:
+        - validation
+        - tests
+
+    - name: Validate important Flatpaks are installed
+      become: false
+      ansible.builtin.command: "flatpak --user info {{ item }}"
+      loop: "{{ validation_flatpaks }}"
+      changed_when: false
+      tags:
+        - validation
+        - tests
+
+    - name: Report Secure Boot state
+      ansible.builtin.command: mokutil --sb-state
+      register: secure_boot_state
+      changed_when: false
+      failed_when: false
+      tags:
+        - validation
+        - tests
+        - nvidia
+
+    - name: Show Secure Boot note
+      ansible.builtin.debug:
+        msg: "{{ secure_boot_state.stdout | default('Could not read Secure Boot state') }}"
+      tags:
+        - validation
+        - tests
+        - nvidia
+
+    - name: Final reboot reminder
+      ansible.builtin.debug:
+        msg: "Reboot before running tests.yaml. NVIDIA runtime checks usually need the new akmod module loaded after reboot."
+      tags:
+        - always
